@@ -53,6 +53,7 @@ def extract_formats(url):
     """يجلب معلومات الفيديو ويحوّلها لاستجابة JSON."""
     info = None
     last_err = None
+    errors = []
 
     # على Vercel IP محجوب أحيانًا — نجرب عملاء متتاليين
     attempts = [None]
@@ -71,25 +72,17 @@ def extract_formats(url):
             break
         except yt_dlp.utils.DownloadError as e:
             last_err = e
+            errors.append(str(e)[:180])
             continue
         except Exception as e:
             last_err = e
+            errors.append(f"{type(e).__name__}: {str(e)[:150]}")
             continue
 
     if info is None:
-        msg = str(last_err) if last_err else "unknown"
-        if "Private" in msg:
-            return None, "الفيديو خاص أو غير متاح.", 422
-        if "Video unavailable" in msg or "Video not available" in msg:
-            return None, "الفيديو غير متاح أو محذوف.", 422
-        if "Unsupported URL" in msg:
-            return None, "رابط غير مدعوم. تأكد إنه رابط فيديو كامل.", 422
-        if "Sign in" in msg or "login" in msg.lower() or "not a bot" in msg:
-            return None, "تعذر الوصول للفيديو الآن. أعد المحاولة بعد لحظات.", 422
-        if "Unexpected response" in msg or "webpage request" in msg:
-            return None, "المنصة رفضت الطلب مؤقتًا. أعد المحاولة بعد لحظات.", 422
-        # DEBUG: نعرض الخطأ الخام مؤقتًا
-        return None, f"DEBUG: {msg[:300]}", 422
+        # DEBUG: نعرض كل الأخطاء الخام
+        joined = " || ".join(errors) if errors else "no-attempts"
+        return None, f"DEBUG: {joined[:700]}", 422
 
     title = info.get("title") or "فيديو بدون عنوان"
     duration = info.get("duration")
