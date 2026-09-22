@@ -6,6 +6,6 @@
       "maxDuration": 60
     }
   },
-  "cleanUrls": true,
+  "cleanUrls": false,
   "trailingSlash": false
 }
