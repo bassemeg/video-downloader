@@ -15,6 +15,12 @@ from urllib.parse import urlparse, parse_qs, quote
 
 import yt_dlp
 
+try:
+    import imageio_ffmpeg
+    _FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    _FFMPEG = None
+
 BROWSER_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -45,16 +51,30 @@ def _pick_format(fmt, formats):
                 if (f.get("ext") or "") == "mp3":
                     break
         if best_audio:
-            return best_audio.get("format_id")
-        return "bestaudio/best"
+            fid = best_audio.get("format_id")
+            return f"{fid}[ext=m4a]/{fid}/bestaudio[ext=m4a]/bestaudio/best"
+        return "bestaudio[ext=m4a]/bestaudio/best"
 
     # مطابقة format_id مباشرة
+    target = None
     for f in formats:
         fid = f.get("format_id") or ""
         if fid == fmt or fid.startswith(fmt.split("+")[0]):
-            return fid
+            target = f
+            break
 
-    # أفضل فيديو+صوت بدون دمج (FFmpeg غير متوفر على Vercel)
+    if target:
+        has_v = target.get("vcodec") not in (None, "none")
+        has_a = target.get("acodec") not in (None, "none")
+        tid = target.get("format_id")
+        if has_v and has_a:
+            return tid
+        if has_v and not has_a and _FFMPEG:
+            # DASH: فيديو فقط → ندمج مع أفضل صوت
+            return f"{tid}+bestaudio/{tid}/bestvideo+bestaudio/best"
+        return tid
+
+    # أفضل فيديو+صوت مدمج
     combined = [
         f for f in formats
         if f.get("vcodec") not in (None, "none")
@@ -66,6 +86,20 @@ def _pick_format(fmt, formats):
         fid = combined[0].get("format_id")
         if fid:
             return fid
+
+    # فيديو DASH + دمج
+    dash = [
+        f for f in formats
+        if f.get("vcodec") not in (None, "none")
+        and f.get("acodec") in (None, "none")
+        and f.get("url")
+        and f.get("height")
+    ]
+    if dash:
+        dash.sort(key=lambda x: x.get("height") or 0, reverse=True)
+        fid = dash[0].get("format_id")
+        if fid and _FFMPEG:
+            return f"{fid}+bestaudio/{fid}/best"
 
     # فيديو فقط
     for f in formats:
@@ -124,9 +158,21 @@ def _download(url, fmt):
         },
     }
 
+    if _FFMPEG:
+        dl_opts["ffmpeg_location"] = _FFMPEG
+        dl_opts["merge_output_format"] = "mp4"
+
     if fmt in ("mp3", "audio"):
-        # بدون FFmpeg: ننزّل أفضل صوت فقط (m4a/aac عادةً)
-        dl_opts["format"] = "bestaudio[ext=m4a]/bestaudio/best"
+        if _FFMPEG:
+            # ننزّل أفضل صوت ونحوّله mp3
+            dl_opts["format"] = "bestaudio/best"
+            dl_opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }]
+        else:
+            dl_opts["format"] = "bestaudio[ext=m4a]/bestaudio/best"
 
     with yt_dlp.YoutubeDL(dl_opts) as ydl:
         ydl.download([url])

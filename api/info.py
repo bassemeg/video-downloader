@@ -87,8 +87,8 @@ def extract_formats(url):
         if "m3u8" in protocol or ext in ("m3u8", "mpd") or "dash" in protocol:
             continue
 
-        # فيديو مدمج الصوت (بدون FFmpeg على Vercel لا ندمج)
-        if has_video and has_audio and height and height >= 360 and furl:
+        # فيديو: مدمج أو DASH (ندمج الصوت في file.py بـ FFmpeg)
+        if has_video and height and height >= 360 and furl:
             width = f.get("width")
             q = min(height, width) if width else height
             m = re.search(r"(\d{3,4})p", fid)
