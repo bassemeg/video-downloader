@@ -36,26 +36,59 @@ def build_opts(extra=None):
     return opts
 
 
+def _is_youtube(url):
+    s = url.lower()
+    return "youtube.com" in s or "youtu.be" in s
+
+
+def _try_extract(url, extractor_args=None):
+    extra = {}
+    if extractor_args:
+        extra["extractor_args"] = extractor_args
+    with yt_dlp.YoutubeDL(build_opts(extra)) as ydl:
+        return ydl.extract_info(url, download=False)
+
+
 def extract_formats(url):
     """يجلب معلومات الفيديو ويحوّلها لاستجابة JSON."""
-    try:
-        with yt_dlp.YoutubeDL(build_opts()) as ydl:
-            info = ydl.extract_info(url, download=False)
-    except yt_dlp.utils.DownloadError as e:
-        msg = str(e)
+    info = None
+    last_err = None
+
+    # على Vercel IP محجوب أحيانًا — نجرب عملاء متتاليين
+    attempts = [None]
+    if _is_youtube(url):
+        attempts += [
+            {"youtube": {"player_client": ["android"]}},
+            {"youtube": {"player_client": ["tv_embedded"]}},
+            {"youtube": {"player_client": ["android_embedded"]}},
+            {"youtube": {"player_client": ["ios"]}},
+        ]
+
+    for args in attempts:
+        try:
+            info = _try_extract(url, args)
+            last_err = None
+            break
+        except yt_dlp.utils.DownloadError as e:
+            last_err = e
+            continue
+        except Exception as e:
+            last_err = e
+            continue
+
+    if info is None:
+        msg = str(last_err) if last_err else ""
         if "Private" in msg:
             return None, "الفيديو خاص أو غير متاح.", 422
         if "Video unavailable" in msg or "Video not available" in msg:
             return None, "الفيديو غير متاح أو محذوف.", 422
         if "Unsupported URL" in msg:
             return None, "رابط غير مدعوم. تأكد إنه رابط فيديو كامل.", 422
-        if "Sign in" in msg or "login" in msg.lower():
-            return None, "الفيديو يحتاج تسجيل دخول. جرّب رابطًا عامًا.", 422
+        if "Sign in" in msg or "login" in msg.lower() or "not a bot" in msg:
+            return None, "تعذر الوصول للفيديو الآن. أعد المحاولة بعد لحظات.", 422
         if "Unexpected response" in msg or "webpage request" in msg:
             return None, "المنصة رفضت الطلب مؤقتًا. أعد المحاولة بعد لحظات.", 422
         return None, "تعذر جلب الفيديو. جرّب رابطًا آخر.", 422
-    except Exception:
-        return None, "خطأ غير متوقع في الخادم.", 500
 
     title = info.get("title") or "فيديو بدون عنوان"
     duration = info.get("duration")

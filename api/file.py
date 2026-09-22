@@ -111,12 +111,12 @@ def _pick_format(fmt, formats):
     return "best"
 
 
-def _download(url, fmt):
-    """يحمّل الملف إلى مسار مؤقت ويعيد (path, title, ext)."""
-    tmpdir = tempfile.mkdtemp(prefix="vd_")
-    outtmpl = os.path.join(tmpdir, "out.%(ext)s")
+def _is_youtube(url):
+    s = url.lower()
+    return "youtube.com" in s or "youtu.be" in s
 
-    # استخراج أولاً لتحديد الصيغة
+
+def _extract_info(url, extractor_args=None):
     info_opts = {
         "quiet": True,
         "no_warnings": True,
@@ -128,8 +128,36 @@ def _download(url, fmt):
             "Referer": "https://www.tiktok.com/",
         },
     }
+    if extractor_args:
+        info_opts["extractor_args"] = extractor_args
     with yt_dlp.YoutubeDL(info_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+        return ydl.extract_info(url, download=False)
+
+
+def _download(url, fmt):
+    """يحمّل الملف إلى مسار مؤقت ويعيد (path, title, ext)."""
+    tmpdir = tempfile.mkdtemp(prefix="vd_")
+    outtmpl = os.path.join(tmpdir, "out.%(ext)s")
+
+    # استخراج أولاً — مع محاولة عملاء متتاليين ليوتيوب
+    attempts = [None]
+    if _is_youtube(url):
+        attempts += [
+            {"youtube": {"player_client": ["android"]}},
+            {"youtube": {"player_client": ["tv_embedded"]}},
+            {"youtube": {"player_client": ["android_embedded"]}},
+        ]
+
+    info = None
+    for args in attempts:
+        try:
+            info = _extract_info(url, args)
+            break
+        except Exception:
+            continue
+
+    if info is None:
+        raise RuntimeError("extract_failed")
 
     selector = _pick_format(fmt, info.get("formats") or [])
     title = info.get("title") or "video"
@@ -158,13 +186,17 @@ def _download(url, fmt):
         },
     }
 
+    # نفس محاولة العملاء عند التحميل
+    if attempts and attempts[0] is None and len(attempts) > 1:
+        # نجرب بنفس ترتيب المحاولات
+        pass
+
     if _FFMPEG:
         dl_opts["ffmpeg_location"] = _FFMPEG
         dl_opts["merge_output_format"] = "mp4"
 
     if fmt in ("mp3", "audio"):
         if _FFMPEG:
-            # ننزّل أفضل صوت ونحوّله mp3
             dl_opts["format"] = "bestaudio/best"
             dl_opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
@@ -174,8 +206,23 @@ def _download(url, fmt):
         else:
             dl_opts["format"] = "bestaudio[ext=m4a]/bestaudio/best"
 
-    with yt_dlp.YoutubeDL(dl_opts) as ydl:
-        ydl.download([url])
+    # نجرب التحميل بنفس ترتيب المحاولات
+    last_exc = None
+    for args in attempts:
+        try:
+            opts = dict(dl_opts)
+            if args:
+                opts["extractor_args"] = args
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                ydl.download([url])
+            last_exc = None
+            break
+        except Exception as e:
+            last_exc = e
+            continue
+
+    if last_exc is not None:
+        raise last_exc
 
     # إيجاد الملف الناتج
     path = None
