@@ -62,22 +62,89 @@
         <h1>حمّل فيديوهات <span class="highlight">فيسبوك</span> و<span class="highlight">يوتيوب</span> بجودة عالية</h1>
         <p class="hero-sub">الصق رابط الفيديو واضغط تحميل. بدون تسجيل دخول، بدون برامج، ومجاني 100%.</p>
 
-        <div class="downloader-box" id="downloader">
-            <div class="input-group">
-                <input type="url" id="videoUrl" class="url-input" placeholder="https://www.youtube.com/watch?v=..." aria-label="رابط الفيديو" autocomplete="off">
-                <button class="btn-download" id="downloadBtn">
-                    <span class="btn-text">تحميل</span>
-                    <span class="btn-spinner" hidden></span>
-                </button>
-            </div>
-            <div class="platform-tags">
-                <span class="tag tag-yt">YouTube</span>
-                <span class="tag tag-fb">Facebook</span>
-                <span class="tag tag-ig">Instagram</span>
-                <span class="tag tag-tt">TikTok</span>
-            </div>
-            <div class="result" id="result" hidden></div>
+        <!-- إعلان 728x90 أعلى مربع التحميل مباشرة -->
+        <div class="hero-ad-top">
+            <span class="ad-label">إعلان</span>
+            <script>
+              atOptions = {
+                'key' : '675f2aaf174779a281d4960ba1d218d5',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highrevenueformat.com/675f2aaf174779a281d4960ba1d218d5/invoke.js"></script>
         </div>
+
+        <!-- التخطيط: إعلان جانبي + مربع التحميل + إعلان جانبي -->
+        <div class="downloader-wrapper">
+
+            <!-- إعلان جانبي يمين 300x250 -->
+            <div class="hero-ad-side hero-ad-right">
+                <span class="ad-label">إعلان</span>
+                <script>
+                  atOptions = {
+                    'key' : 'b7af6cf608fccdb156bf37189975a203',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                  };
+                </script>
+                <script src="https://www.highrevenueformat.com/b7af6cf608fccdb156bf37189975a203/invoke.js"></script>
+            </div>
+
+            <!-- مربع التحميل الرئيسي -->
+            <div class="downloader-box" id="downloader">
+                <div class="input-group">
+                    <input type="url" id="videoUrl" class="url-input" placeholder="https://www.youtube.com/watch?v=..." aria-label="رابط الفيديو" autocomplete="off">
+                    <button class="btn-download" id="downloadBtn">
+                        <span class="btn-text">تحميل</span>
+                        <span class="btn-spinner" hidden></span>
+                    </button>
+                </div>
+                <div class="platform-tags">
+                    <span class="tag tag-yt">YouTube</span>
+                    <span class="tag tag-fb">Facebook</span>
+                    <span class="tag tag-ig">Instagram</span>
+                    <span class="tag tag-tt">TikTok</span>
+                </div>
+                <div class="result" id="result" hidden></div>
+            </div>
+
+            <!-- إعلان جانبي يسار 300x250 -->
+            <div class="hero-ad-side hero-ad-left">
+                <span class="ad-label">إعلان</span>
+                <script>
+                  atOptions = {
+                    'key' : 'b7af6cf608fccdb156bf37189975a203',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                  };
+                </script>
+                <script src="https://www.highrevenueformat.com/b7af6cf608fccdb156bf37189975a203/invoke.js"></script>
+            </div>
+
+        </div>
+
+        <!-- إعلان 320x50 أسفل مربع التحميل -->
+        <div class="hero-ad-bottom">
+            <span class="ad-label">إعلان</span>
+            <script>
+              atOptions = {
+                'key' : '5142dd7118e674d1e9561fe2e23da7ad',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highrevenueformat.com/5142dd7118e674d1e9561fe2e23da7ad/invoke.js"></script>
+        </div>
+
     </div>
 </section>
 
