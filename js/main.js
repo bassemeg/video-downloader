@@ -103,10 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
             html += '<div class="quality-list">';
             data.formats.forEach(f => {
                 const isAudio = f.type === 'audio';
-                // نفضّل الرابط المباشر، وإلا نمرر بـ /api/file
-                const href = f.direct_url
-                    ? f.direct_url
-                    : `/api/file?u=${src}&q=${encodeURIComponent(f.format_id || 'best')}`;
+                // نمرر دائمًا عبر /api/file (بث مع الترويسات الصحيحة — مطلوب لتيك توك)
+                const href = `/api/file?u=${src}&q=${encodeURIComponent(f.format_id || 'best')}`;
                 html += `
                     <div class="quality-row">
                         <span class="quality-label">${escapeHtml(f.label)}</span>
