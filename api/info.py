@@ -102,6 +102,7 @@ def extract_formats(url):
                 "label": f"فيديو MP4 — {q}p",
                 "type": "video",
                 "quality": q,
+                "format_id": fid,
                 "direct_url": furl,
             })
             continue
@@ -117,6 +118,7 @@ def extract_formats(url):
                 "label": f"فيديو MP4 — {qname}",
                 "type": "video",
                 "quality": 720 if fid.lower() == "hd" else 480,
+                "format_id": fid,
                 "direct_url": furl,
             })
             continue
@@ -131,6 +133,7 @@ def extract_formats(url):
             "label": "صوت — MP3 / M4A",
             "type": "audio",
             "quality": 0,
+            "format_id": "mp3",
             "direct_url": audio_url,
         })
     else:
@@ -142,6 +145,7 @@ def extract_formats(url):
                     "label": "صوت — MP3 / M4A",
                     "type": "audio",
                     "quality": 0,
+                    "format_id": "mp3",
                     "direct_url": f["url"],
                 })
                 break
