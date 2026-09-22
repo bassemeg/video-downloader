@@ -108,6 +108,13 @@ a:hover { text-decoration: underline; }
     background: linear-gradient(160deg, #eef4ff 0%, #f8fafc 100%);
     padding: 56px 0 48px;
     text-align: center;
+    /* منع أي overflow أفقي داخل السيكشن */
+    overflow-x: hidden;
+}
+
+.hero .container {
+    padding: 0 16px;
+    box-sizing: border-box;
 }
 
 .hero h1 {
@@ -124,60 +131,69 @@ a:hover { text-decoration: underline; }
     font-size: 1.1rem;
     max-width: 640px;
     margin: 0 auto 32px;
+    padding: 0 8px;
 }
 
 /* ===== صندوق التحميل ===== */
 
-/* Wrapper: إعلان يمين + مربع + إعلان يسار */
+/* ─── الإعلانات فوق مربع التحميل (728x90) ─── */
+.hero-ad-top {
+    width: 100%;
+    max-width: 728px;
+    margin: 0 auto 16px;
+    text-align: center;
+    overflow: hidden;   /* يمنع أي تجاوز أفقي */
+}
+
+/* على الشاشات الأصغر من 728px: نُقلّص الإطار بـ CSS scale */
+.hero-ad-top iframe {
+    max-width: 100%;
+}
+
+/* ─── Wrapper: إعلان يمين + مربع + إعلان يسار ─── */
 .downloader-wrapper {
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 16px;
-    margin: 0 auto;
-    max-width: 1200px;
-}
-
-/* إعلانات hero أعلى وأسفل مربع التحميل */
-.hero-ad-top,
-.hero-ad-bottom {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    margin: 0 auto 12px;
-    max-width: 100%;
-    overflow: hidden;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.hero-ad-top {
-    margin-bottom: 14px;
-}
-
-.hero-ad-bottom {
-    margin-top: 14px;
-}
-
-/* الإعلانات الجانبية بجوار مربع التحميل */
+/* ─── الإعلانات الجانبية (300x250) ─── */
 .hero-ad-side {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 300px;
-    align-self: center;
+    /* مخفية افتراضياً على الشاشات الصغيرة — تُفعَّل بـ breakpoint أعلى */
+    display: none;
 }
 
-/* مربع التحميل الرئيسي */
+/* ─── مربع التحميل الرئيسي ─── */
 .downloader-box {
     background: var(--white);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 24px;
-    flex: 1;
-    min-width: 280px;
+    width: 100%;
     max-width: 720px;
+    box-sizing: border-box;
     text-align: right;
+    flex: 1 1 auto;
+    min-width: 0;      /* يمنع flex overflow */
 }
+
+/* ─── إعلان أسفل مربع التحميل (320x50) ─── */
+.hero-ad-bottom {
+    width: 100%;
+    max-width: 320px;
+    margin: 16px auto 0;
+    text-align: center;
+    overflow: hidden;
+}
+
 
 
 .input-group {
@@ -188,7 +204,8 @@ a:hover { text-decoration: underline; }
 
 .url-input {
     flex: 1;
-    min-width: 220px;
+    min-width: 0;         /* يمنع overflow على الموبايل */
+    width: 100%;
     padding: 15px 18px;
     border: 2px solid var(--border);
     border-radius: 10px;
@@ -196,6 +213,7 @@ a:hover { text-decoration: underline; }
     font-family: inherit;
     direction: ltr;
     text-align: left;
+    box-sizing: border-box;
     transition: border-color .2s;
 }
 
@@ -728,17 +746,88 @@ a:hover { text-decoration: underline; }
     .consent-actions { justify-content: center; }
     .btn-consent { flex: 1; }
 
-    /* إخفاء الإعلانات الجانبية على الموبايل لتبقى مساحة الإدخال كاملة */
-    .hero-ad-side { display: none; }
+    /* ── الإعلانات على الموبايل ── */
 
-    /* إخفاء إعلان 728x90 على الشاشات الصغيرة لمنع التمرير الأفقي */
+    /* مربع التحميل بالعرض الكامل */
+    .downloader-box {
+        max-width: 100%;
+        padding: 18px 14px;
+    }
+
+    /* إخفاء إعلان 728x90 الكبير تماماً — يسبب overflow */
     .hero-ad-top { display: none; }
 
-    /* الـ wrapper يصبح عمودي */
-    .downloader-wrapper { flex-direction: column; gap: 0; }
+    /* إخفاء الإعلانات الجانبية — لا مكان لها على الموبايل */
+    .hero-ad-side { display: none !important; }
 
-    /* مربع التحميل يأخذ العرض الكامل */
-    .downloader-box { max-width: 100%; }
+    /* الـ wrapper يصبح عمود واحد بدون gap */
+    .downloader-wrapper {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* إعلان 320x50 أسفل المربع — يناسب الموبايل تماماً */
+    .hero-ad-bottom {
+        max-width: 100%;
+        margin-top: 12px;
+        overflow: hidden;
+    }
+
+    /* منع أي iframe من تجاوز عرض الشاشة */
+    .hero-ad-bottom iframe {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+}
+
+/* ===== التابلت (769px – 1099px) ===== */
+@media (min-width: 769px) and (max-width: 1099px) {
+    /* الإعلانات الجانبية لا تتسع — نخفيها */
+    .hero-ad-side { display: none !important; }
+
+    /* مربع التحميل يأخذ العرض المريح */
+    .downloader-box {
+        flex: unset;
+        width: 100%;
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    /* إعلان 728x90 — نُقلّصه إذا الشاشة أضيق منه */
+    .hero-ad-top {
+        max-width: 100%;
+        overflow: hidden;
+    }
+}
+
+/* ===== الشاشات الكبيرة (≥ 1100px) — Desktop Full ===== */
+@media (min-width: 1100px) {
+    /* إظهار الإعلانات الجانبية 300x250 */
+    .hero-ad-side {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        width: 300px;
+        align-self: center;
+    }
+
+    /* تثبيت حجم مربع التحميل ليبقى واسعاً بين الإعلانين */
+    .downloader-box {
+        flex: 1 1 auto;
+        min-width: 320px;
+        max-width: 720px;
+    }
+
+    /* wrapper يحتوي الثلاثة بشكل أفقي */
+    .downloader-wrapper {
+        flex-direction: row;
+        gap: 16px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
 }
 
 /* ===== تحسين الوصول ===== */
@@ -751,13 +840,8 @@ a:hover { text-decoration: underline; }
     outline-offset: 2px;
 }
 
-/* ===== شاشات التابلت: إخفاء الإعلانات الجانبية فقط ===== */
-@media (max-width: 1100px) and (min-width: 769px) {
-    .hero-ad-side { display: none; }
-    .downloader-box { max-width: 720px; flex: unset; margin: 0 auto; }
-}
-
-/* ===== شاشات كبيرة: إظهار إعلان 728x90 فقط إذا توفر المساحة ===== */
-@media (max-width: 800px) {
-    .hero-ad-top { display: none; }
+/* منع أي تمرير أفقي عام في الصفحة */
+body, html {
+    overflow-x: hidden;
+    max-width: 100%;
 }
