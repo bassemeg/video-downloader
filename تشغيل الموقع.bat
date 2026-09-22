@@ -39,7 +39,7 @@ echo Close this window to stop the website.
 echo ==========================================
 echo.
 
-python "%~dp0server.py"
+python "%~dp0local_server.py"
 
 echo.
 echo Server stopped.

@@ -1,8 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "functions": {
     "api/*.py": {
       "maxDuration": 60
     }
-  }
+  },
+  "cleanUrls": true,
+  "trailingSlash": false
 }
