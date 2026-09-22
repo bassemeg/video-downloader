@@ -77,7 +77,7 @@ def extract_formats(url):
             continue
 
     if info is None:
-        msg = str(last_err) if last_err else ""
+        msg = str(last_err) if last_err else "unknown"
         if "Private" in msg:
             return None, "الفيديو خاص أو غير متاح.", 422
         if "Video unavailable" in msg or "Video not available" in msg:
@@ -88,7 +88,8 @@ def extract_formats(url):
             return None, "تعذر الوصول للفيديو الآن. أعد المحاولة بعد لحظات.", 422
         if "Unexpected response" in msg or "webpage request" in msg:
             return None, "المنصة رفضت الطلب مؤقتًا. أعد المحاولة بعد لحظات.", 422
-        return None, "تعذر جلب الفيديو. جرّب رابطًا آخر.", 422
+        # DEBUG: نعرض الخطأ الخام مؤقتًا
+        return None, f"DEBUG: {msg[:300]}", 422
 
     title = info.get("title") or "فيديو بدون عنوان"
     duration = info.get("duration")
