@@ -3,11 +3,15 @@ Vercel Serverless — جلب معلومات الفيديو
 POST /api/info  { "url": "..." }
 
 الشكل المدعوم: class handler(BaseHTTPRequestHandler)
+
+ملاحظة: يوتيوب يمر عبر Cobalt الخارجي (COBALT_API_URL)
+لأن IP خادم Vercel محجوب من يوتيوب. باقي المنصات تستخدم yt-dlp محليًا.
 """
 import json
+import os
 import re
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote
 
 import yt_dlp
 
@@ -16,6 +20,17 @@ BROWSER_UA = (
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/131.0.0.0 Safari/537.36"
 )
+
+
+def is_youtube_url(url):
+    """يتأكد إن الرابط من يوتيوب (يشمل youtube.com, youtu.be, m.youtube.com, music.youtube.com)."""
+    s = url.lower()
+    return (
+        "youtube.com" in s
+        or "youtu.be" in s
+        or "m.youtube.com" in s
+        or "music.youtube.com" in s
+    )
 
 
 def build_opts(extra=None):
@@ -36,38 +51,180 @@ def build_opts(extra=None):
     return opts
 
 
-def _is_youtube(url):
+def _cobalt_request(url, extra_body=None):
+    """يطلب Cobalt ويعيد (status, download_url, filename, error_msg)."""
+    import urllib.request
+    import urllib.error
+
+    cobalt_base = os.environ.get("COBALT_API_URL", "").strip()
+    if not cobalt_base:
+        return None, None, None, "COBALT_API_URL غير مضبوط."
+
+    body = {"url": url}
+    if extra_body:
+        body.update(extra_body)
+
+    data = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        cobalt_base.rstrip("/") + "/",
+        data=data,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": BROWSER_UA,
+        },
+        method="POST",
+    )
+
+    try:
+        resp = urllib.request.urlopen(req, timeout=30)
+        raw = resp.read().decode("utf-8", errors="replace")
+        result = json.loads(raw)
+    except urllib.error.HTTPError as e:
+        try:
+            err_body = e.read().decode("utf-8", errors="replace")
+            err_json = json.loads(err_body)
+            return None, None, None, err_json.get("error", {}).get("message", str(e))
+        except Exception:
+            return None, None, None, f"Cobalt HTTP {e.code}"
+    except urllib.error.URLError as e:
+        return None, None, None, f"Cobalt connection error: {e.reason}"
+    except Exception as e:
+        return None, None, None, f"Cobalt error: {type(e).__name__}: {str(e)[:200]}"
+
+    status = result.get("status")
+    if status in ("tunnel", "redirect"):
+        dl_url = result.get("url", "")
+        filename = result.get("filename", "")
+        return status, dl_url, filename, None
+
+    # status == "error" أو غير معروف
+    err_obj = result.get("error") or {}
+    msg = ""
+    if isinstance(err_obj, dict):
+        msg = err_obj.get("message") or err_obj.get("code") or ""
+    elif isinstance(err_obj, str):
+        msg = err_obj
+    if not msg:
+        msg = str(result.get("status", "unknown error"))
+    return None, None, None, f"Cobalt: {msg}"
+
+
+def _youtube_oembed(url):
+    """يجيب عنوان وصورة مصغرة من YouTube oEmbed (API عام غير محجوب)."""
+    import urllib.request
+    import urllib.parse
+
+    try:
+        api = (
+            "https://www.youtube.com/oembed?format=json&url="
+            + urllib.parse.quote(url, safe="")
+        )
+        req = urllib.request.Request(
+            api, headers={"User-Agent": BROWSER_UA}
+        )
+        resp = urllib.request.urlopen(req, timeout=15)
+        data = json.loads(resp.read().decode("utf-8", errors="replace"))
+        return data.get("title", ""), data.get("thumbnail_url", "")
+    except Exception:
+        return "", ""
+
+
+def _extract_via_cobalt(url):
+    """يجلب صيغ يوتيوب عبر Cobalt — يرجع نفس بنية باقي المنصات."""
+    # جودات نطلبها من Cobalt
+    video_specs = [
+        ("1080", "فيديو MP4 — 1080p (Full HD)", 1080),
+        ("720", "فيديو MP4 — 720p (HD)", 720),
+    ]
+
+    formats = []
+    errors = []
+
+    # طلبات الفيديو
+    for q_val, label, q_num in video_specs:
+        status, dl_url, filename, err = _cobalt_request(
+            url, {"videoQuality": q_val}
+        )
+        if err:
+            errors.append(f"{label}: {err}")
+            continue
+        if dl_url:
+            formats.append({
+                "label": label,
+                "type": "video",
+                "quality": q_num,
+                "format_id": f"yt_{q_val}",
+                "direct_url": dl_url,
+            })
+
+    # طلب الصوت MP3
+    status, dl_url, filename, err = _cobalt_request(
+        url,
+        {"downloadMode": "audio", "audioFormat": "mp3"},
+    )
+    if err:
+        errors.append(f"MP3: {err}")
+    elif dl_url:
+        formats.append({
+            "label": "صوت — MP3",
+            "type": "audio",
+            "quality": 0,
+            "format_id": "yt_mp3",
+            "direct_url": dl_url,
+        })
+
+    if not formats:
+        joined = " | ".join(errors) if errors else "no formats returned"
+        return None, f"تعذر جلب يوتيوب من Cobalt: {joined[:500]}", 422
+
+    # العنوان والصورة من oEmbed (API عام)
+    title, thumb = _youtube_oembed(url)
+
+    formats.sort(key=lambda x: x.get("quality") or 0, reverse=True)
+
+    return {
+        "title": title or "فيديو يوتيوب",
+        "duration": "",
+        "thumbnail": thumb,
+        "platform": "YouTube",
+        "formats": formats,
+        "source_url": url,
+    }, None, 200
+
+
+def _platform(url):
     s = url.lower()
-    return "youtube.com" in s or "youtu.be" in s
-
-
-def _try_extract(url, extractor_args=None):
-    extra = {}
-    if extractor_args:
-        extra["extractor_args"] = extractor_args
-    with yt_dlp.YoutubeDL(build_opts(extra)) as ydl:
-        return ydl.extract_info(url, download=False)
+    if "youtube" in s or "youtu.be" in s:
+        return "YouTube"
+    if "facebook" in s or "fb.watch" in s:
+        return "Facebook"
+    if "instagram" in s:
+        return "Instagram"
+    if "tiktok" in s:
+        return "TikTok"
+    return "فيديو"
 
 
 def extract_formats(url):
     """يجلب معلومات الفيديو ويحوّلها لاستجابة JSON."""
+    # يوتيوب → Cobalt الخارجي (IP Vercel محجوب من يوتيوب)
+    if is_youtube_url(url):
+        return _extract_via_cobalt(url)
+
+    # باقي المنصات → yt-dlp محليًا (بدون أي تغيير)
     info = None
     last_err = None
     errors = []
 
-    # على Vercel IP محجوب أحيانًا — نجرب عملاء متتاليين
     attempts = [None]
-    if _is_youtube(url):
-        attempts += [
-            {"youtube": {"player_client": ["android"]}},
-            {"youtube": {"player_client": ["tv_embedded"]}},
-            {"youtube": {"player_client": ["android_embedded"]}},
-            {"youtube": {"player_client": ["ios"]}},
-        ]
-
     for args in attempts:
         try:
-            info = _try_extract(url, args)
+            extra = {}
+            if args:
+                extra["extractor_args"] = args
+            with yt_dlp.YoutubeDL(build_opts(extra)) as ydl:
+                info = ydl.extract_info(url, download=False)
             last_err = None
             break
         except yt_dlp.utils.DownloadError as e:
@@ -80,9 +237,18 @@ def extract_formats(url):
             continue
 
     if info is None:
-        # DEBUG: نعرض كل الأخطاء الخام
-        joined = " || ".join(errors) if errors else "no-attempts"
-        return None, f"DEBUG: {joined[:700]}", 422
+        msg = str(last_err) if last_err else "unknown"
+        if "Private" in msg:
+            return None, "الفيديو خاص أو غير متاح.", 422
+        if "Video unavailable" in msg or "Video not available" in msg:
+            return None, "الفيديو غير متاح أو محذوف.", 422
+        if "Unsupported URL" in msg:
+            return None, "رابط غير مدعوم. تأكد إنه رابط فيديو كامل.", 422
+        if "Sign in" in msg or "login" in msg.lower() or "not a bot" in msg:
+            return None, "تعذر الوصول للفيديو الآن. أعد المحاولة بعد لحظات.", 422
+        if "Unexpected response" in msg or "webpage request" in msg:
+            return None, "المنصة رفضت الطلب مؤقتًا. أعد المحاولة بعد لحظات.", 422
+        return None, "تعذر جلب الفيديو. جرّب رابطًا آخر.", 422
 
     title = info.get("title") or "فيديو بدون عنوان"
     duration = info.get("duration")
@@ -190,19 +356,6 @@ def extract_formats(url):
         "formats": formats,
         "source_url": url,
     }, None, 200
-
-
-def _platform(url):
-    s = url.lower()
-    if "youtube" in s or "youtu.be" in s:
-        return "YouTube"
-    if "facebook" in s or "fb.watch" in s:
-        return "Facebook"
-    if "instagram" in s:
-        return "Instagram"
-    if "tiktok" in s:
-        return "TikTok"
-    return "فيديو"
 
 
 class handler(BaseHTTPRequestHandler):
