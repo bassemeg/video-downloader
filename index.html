@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحميل الفيديو من فيسبوك ويوتيوب - مجاني وسريع 2026</title>
+    <meta name="description" content="أداة عربية مجانية لتحميل الفيديوهات من فيسبوك ويوتيوب بجودة عالية حتى 4K. بدون تسجيل دخول، بدون برامج، وتعمل على الموبايل والكمبيوتر.">
+    <meta name="keywords" content="تحميل فيديو فيسبوك, تحميل فيديو يوتيوب, تنزيل فيديو, فيديو HD">
+    <meta name="author" content="فريق فتحي">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="تحميل الفيديو من فيسبوك ويوتيوب - مجاني وسريع">
+    <meta property="og:description" content="حمّل أي فيديو من فيسبوك أو يوتيوب بجودة عالية بدون تسجيل دخول.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ar_AR">
+
+    <!-- AdSense (استبدل بمعرفك) -->
+    <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "تحميل الفيديو من فيسبوك ويوتيوب",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0" },
+      "description": "أداة مجانية لتحميل الفيديوهات من فيسبوك ويوتيوب بجودة عالية."
+    }
+    </script>
+</head>
+<body>
+
+<!-- شريط التنقل -->
+<header class="site-header">
+    <div class="container">
+        <a href="index.html" class="logo">
+            <span class="logo-icon">⬇</span>
+            <span class="logo-text">تحميل_لدينا</span>
+        </a>
+        <nav class="main-nav" id="mainNav">
+            <a href="index.html" class="active">الرئيسية</a>
+            <a href="#how">طريقة الاستخدام</a>
+            <a href="#faq">الأسئلة الشائعة</a>
+            <a href="pages/about.html">من نحن</a>
+        </nav>
+        <button class="nav-toggle" id="navToggle" aria-label="فتح القائمة">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- البانر الرئيسي مع أداة التحميل -->
+<section class="hero">
+    <div class="container">
+        <h1>حمّل فيديوهات <span class="highlight">فيسبوك</span> و<span class="highlight">يوتيوب</span> بجودة عالية</h1>
+        <p class="hero-sub">الصق رابط الفيديو واضغط تحميل. بدون تسجيل دخول، بدون برامج، ومجاني 100%.</p>
+
+        <div class="downloader-box" id="downloader">
+            <div class="input-group">
+                <input type="url" id="videoUrl" class="url-input" placeholder="https://www.youtube.com/watch?v=..." aria-label="رابط الفيديو" autocomplete="off">
+                <button class="btn-download" id="downloadBtn">
+                    <span class="btn-text">تحميل</span>
+                    <span class="btn-spinner" hidden></span>
+                </button>
+            </div>
+            <div class="platform-tags">
+                <span class="tag tag-yt">YouTube</span>
+                <span class="tag tag-fb">Facebook</span>
+                <span class="tag tag-ig">Instagram</span>
+                <span class="tag tag-tt">TikTok</span>
+            </div>
+            <div class="result" id="result" hidden></div>
+        </div>
+    </div>
+</section>
+
+<!-- مساحة إعلانية علوية -->
+<div class="ad-slot ad-top">
+    <span class="ad-label">إعلان</span>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="1111111111"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+</div>
+
+<!-- المميزات -->
+<section class="features">
+    <div class="container">
+        <h2>ليه تستخدمنا؟</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>تحميل سريع</h3>
+                <p>الخوادم بتتحمل الفيديو فوراً، يعني مفيش انتظار طويل حتى مع الفيديوهات الطويلة.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>بدون تسجيل</h3>
+                <p>مش محتاج تعمل حساب أو تدخل بياناتك. الرابط بس يكفينا نشغّل التحميل.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🖥️</div>
+                <h3>على كل الأجهزة</h3>
+                <p>الموقع شغّال على الموبايل والتابلت والكمبيوتر بنفس السرعة والجودة.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎞️</div>
+                <h3>جودة عالية</h3>
+                <p>اختار الجودة اللي تناسبك من 360p لحد 4K، كمان تحويل صوت MP3.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🆓</div>
+                <h3>مجاني بالكامل</h3>
+                <p>مفيش رسوم خفية ولا اشتراك شهري. كل الأدوات متاحة لجميع الزوار.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>آمن ونظيف</h3>
+                <p>ملف التحميل بيتسلّم مباشرة من المصدر بدون فيروسات أو برامج إضافية.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- مساحة إعلانية -->
+<div class="ad-slot">
+    <span class="ad-label">إعلان</span>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="2222222222"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+</div>
+
+<!-- طريقة الاستخدام -->
+<section class="how" id="how">
+    <div class="container">
+        <h2>طريقة الاستخدام في 3 خطوات</h2>
+        <div class="steps">
+            <div class="step">
+                <span class="step-num">1</span>
+                <h3>انسخ رابط الفيديو</h3>
+                <p>ادخل فيديو يوتيوب أو فيسبوك، واضغط <strong>مشاركة</strong> وبعدين <strong>نسخ الرابط</strong>.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">2</span>
+                <h3>الصق الرابط في الموقع</h3>
+                <p>ارجع لفوق، الصق الرابط في الخانة البيضاء، واضغط زرار <strong>تحميل</strong>.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">3</span>
+                <h3>اختار الجودة وحمّل</h3>
+                <p>هيظهرلك قائمة بالجودات المتاحة. اختار اللي يناسبك واضغط <strong>تنزيل الملف</strong>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- مقال مساعد (محتوى مفيد) -->
+<section class="content-section">
+    <div class="container narrow">
+        <h2>إزاي تحمّل فيديو من يوتيوب على موبايلك</h2>
+        <p><strong>تحميل الفيديو من يوتيوب</strong> على الموبايل أسهل مما تتخيل. كل اللي محتاجه إنك تنسخ الرابط من تطبيق يوتيوب وبعدين تفتح الموقع من المتصفح.</p>
+        <p>بعد ما تلصق الرابط في خانة التحميل، هيقرا الموقع معلومات الفيديو زي اسمه ومدته. بعدها تختار جودة الفيديو — لو عايز توفر في الذاكرة اختار <strong>360p</strong>، ولو عايز وضوح كامل اختار <strong>1080p</strong>.</p>
+        <p>ملحوظة مهمة: التحميل مباشر من المصدر، يعني الملف بيوصلك على طول <strong>بدون روابط مختصرة</strong> أو إعلانات مزعجة في المنتصف.</p>
+
+        <h2>ليه بعض الفيديوهات بتفشل في التحميل؟</h2>
+        <p>في حالة قليلة الفيديو ممكن يظهر فيه خطأ. الأسباب الأشهر إن الفيديو <strong>خاص</strong> أو محمي بحقوق النشر، أو إن الرابط النسخة فيه مش كامل.</p>
+        <p>الحل بسيط: انسخ الرابط مرة تانية من زر <strong>مشاركة</strong> نفسه. ولو الفيديو لسه مش شغال، يبقى غالبًا صاحبه قفل التحميل عليه.</p>
+
+        <div class="author-box">
+            <div class="author-info">
+                <span class="author-avatar">ف</span>
+                <div>
+                    <strong>بقلم: فريق فتحي</strong>
+                    <span class="author-meta">محدّث في 22 سبتمبر 2026 · قراءة 4 دقائق</span>
+                </div>
+            </div>
+            <p class="author-bio">فريق فتحي متخصص في أدوات الويب المجانية وشرح برامج تحرير الفيديو والصوتيات. بنكتب محتوى عملي تجرّبه على طول.</p>
+        </div>
+    </div>
+</section>
+
+<!-- الأسئلة الشائعة -->
+<section class="faq" id="faq">
+    <div class="container narrow">
+        <h2>الأسئلة الشائعة</h2>
+
+        <details class="faq-item">
+            <summary>هل الموقع مجاني فعلاً؟</summary>
+            <p>أيوه، كل الأدوات مجانية ومفتوحة للجميع. مفيش اشتراك ولا حد أقصى لعدد التحميلات.</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>هل أقدر أحمّل فيديو فيسبوك خاص؟</summary>
+            <p>للاسف لا. الفيديوهات الخاصة أو المحمية بحساب مقفول مش هتشتغل لأن النظام محتاج يشوف الرابط من جوه.</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>هل يدعم تحويل الفيديو لصوت MP3؟</summary>
+            <p>أيوه، بعد ما تلصق الرابط هتلاقي خيار <strong>MP3</strong> في قائمة الجودات. منه تحصل على الصوت بس.</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>هل الموقع بيخزّن الفيديوهات بتاعتي؟</summary>
+            <p>لا، التحميل بيحصل بينك وبين مصدر الفيديو مباشرة. إحنا مش بنخزّن أي ملفات على سيرفراتنا.</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>التحميل بطيء، إيه الحل؟</summary>
+            <p>جرّب تغيّر الجودة لأخف واحدة، أو اتأكد إن النت عندك مستقر. لو استمرت المشكلة، جرّب تفتح الموقع في وقت تاني.</p>
+        </details>
+    </div>
+</section>
+
+<!-- تحذير قانوني -->
+<section class="legal-note">
+    <div class="container narrow">
+        <h2>استخدام مسؤول</h2>
+        <p>الأداة دي مخصصة لتحميل المحتوى اللي تملكه أو المرخّص لك باستخدامه. <strong>ممنوع</strong> استخدامها في انتهاك حقوق النشر أو نشر محتوى حد تاني من غير إذنه. مسؤولية الاستخدام عليك أنت.</p>
+    </div>
+</section>
+
+<!-- الفوتر -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h3>تحميل_لدينا</h3>
+                <p>أداة عربية مجانية لتحميل الفيديوهات من فيسبوك ويوتيوب بجودة عالية.</p>
+            </div>
+            <div class="footer-col">
+                <h3>روابط سريعة</h3>
+                <ul>
+                    <li><a href="index.html">الرئيسية</a></li>
+                    <li><a href="#how">طريقة الاستخدام</a></li>
+                    <li><a href="#faq">الأسئلة الشائعة</a></li>
+                    <li><a href="pages/about.html">من نحن</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>قانوني</h3>
+                <ul>
+                    <li><a href="pages/privacy.html">سياسة الخصوصية</a></li>
+                    <li><a href="pages/terms.html">شروط الاستخدام</a></li>
+                    <li><a href="pages/cookies.html">سياسة ملفات الارتباط</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 تحميل_لدينا. جميع الحقوق محفوظة.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- بانر الموافقة على الكوكيز -->
+<div class="consent-banner" id="consentBanner" hidden>
+    <div class="consent-inner">
+        <p>إحنا بندّي إعلانات من <strong>Google AdSense</strong> وبستخدم ملفات الارتباط لتحسين تجربتك. بمتابعتك أنت موافق على <a href="pages/cookies.html">سياسة ملفات الارتباط</a> و<a href="pages/privacy.html">سياسة الخصوصية</a>.</p>
+        <div class="consent-actions">
+            <button class="btn-consent accept" id="consentAccept">أوافق</button>
+            <button class="btn-consent decline" id="consentDecline">لا أوافق</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

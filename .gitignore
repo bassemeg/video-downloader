@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Vercel
+.vercel/
+
+# نظامي
+.freebuff/
+*.rtf
+
+# ملفات مؤقتة
+*.log
+.DS_Store
+Thumbs.db
