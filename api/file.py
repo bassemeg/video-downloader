@@ -343,16 +343,15 @@ class handler(BaseHTTPRequestHandler):
         else:
             ctype = "video/mp4"
 
-        # عنوان الملف
         if filename:
             dl_name = filename
         else:
             dl_name = "youtube_video." + ext
 
-        # جلب المحتوى من Cobalt/الخادم الخارجي
+        # جلب المحتوى من Cobalt tunnel
         req = urllib.request.Request(
             tunnel_url,
-            headers={"User-Agent": BROWSER_UA, "Referer": "https://www.youtube.com/"},
+            headers={"User-Agent": BROWSER_UA},
         )
         try:
             upstream = urllib.request.urlopen(req, timeout=60)
@@ -363,12 +362,28 @@ class handler(BaseHTTPRequestHandler):
         content_type = upstream.headers.get("Content-Type") or ctype
         content_length = upstream.headers.get("Content-Length")
 
+        # اقرأ أول دفعة قبل إرسال headers — لو فاضية نرجع خطأ بدل 200 فاضي
+        try:
+            first_chunk = upstream.read(64 * 1024)
+        except Exception:
+            upstream.close()
+            self._error("فشل قراءة مصدر التحميل. أعد المحاولة.", 502)
+            return
+
+        if not first_chunk:
+            upstream.close()
+            self._error("مصدر التحميل أرجع محتوى فارغًا. أعد المحاولة.", 502)
+            return
+
         fname_ascii = dl_name.encode("ascii", "ignore").decode("ascii") or "video.mp4"
 
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         if content_length:
             self.send_header("Content-Length", content_length)
+        else:
+            # بدون Content-Length — نستخدم chunked (HTTP/1.1)
+            self.send_header("Transfer-Encoding", "chunked")
         self.send_header(
             "Content-Disposition",
             f"attachment; filename=\"{fname_ascii}\"; filename*=UTF-8''{quote(dl_name)}",
@@ -377,15 +392,28 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
 
+        chunked = not content_length
+
         try:
+            # أول دفعة بالفعل اتقريت
+            chunk = first_chunk
             while True:
+                if chunked:
+                    self.wfile.write(f"{len(chunk):X}\r\n".encode())
+                    self.wfile.write(chunk)
+                    self.wfile.write(b"\r\n")
+                    self.wfile.flush()
+                else:
+                    self.wfile.write(chunk)
+                    self.wfile.flush()
                 chunk = upstream.read(64 * 1024)
                 if not chunk:
                     break
-                self.wfile.write(chunk)
+            if chunked:
+                self.wfile.write(b"0\r\n\r\n")
                 self.wfile.flush()
         except Exception:
-            pass
+            pass  # المتصفح أغلق الاتصال
         finally:
             try:
                 upstream.close()
